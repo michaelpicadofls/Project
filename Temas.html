@@ -104,7 +104,7 @@
   </div>
 </div>
 
- <script>
+<script>
 let idiomaSeleccionado = "spanish";
 
 const traducciones = {
@@ -200,7 +200,7 @@ function cambiarIdioma() {
 }
 
 function agregarFila() {
-  const t = traducciones[idiomaSeleccionado];
+  const t    = traducciones[idiomaSeleccionado];
   const tbody = document.querySelector("#tabla tbody");
   const fila  = document.createElement("tr");
   fila.innerHTML = `
@@ -227,29 +227,26 @@ async function generarLatex() {
   const semestre  = document.getElementById('semestre').value;
   const diaExamen = document.getElementById('diaExamen').value;
 
-  // Cabecera de la longtable
   let tablaLatex = `\\begin{longtable}{|p{1.9in}|p{1.9in}|p{1.9in}|}\\hline\n`;
-  tablaLatex += `\\textbf{${t.aprendizajes}} & \\textbf{${t.contenidos}} & \\textbf{${t.recursos}} \\\\ \\hline\n\\endfirsthead\n`;
-  tablaLatex += `\\textbf{${t.aprendizajes}} & \\textbf{${t.contenidos}} & \\textbf{${t.recursos}} \\\\ \\hline\n\\endhead\n`;
+  tablaLatex += `\\textbf{${t.aprendizajes}} & \\textbf{${t.contenidos}} & \\textbf{${t.recursos}} \\\\ \\hline\n`;
+  tablaLatex += `\\endfirsthead\n\\textbf{${t.aprendizajes}} & \\textbf{${t.contenidos}} & \\textbf{${t.recursos}} \\\\ \\hline\n\\endhead\n`;
 
-  // Cada fila de la tabla HTML → múltiples filas LaTeX según líneas
+  const todasFilas = [];
   document.querySelectorAll('#tabla tbody tr').forEach(row => {
     const celdas = row.querySelectorAll('textarea');
-    // Array de arrays de líneas
     const lineasPorCol = Array.from(celdas).map(ta => ta.value.split(/\n/));
-    // Cuántas sub-filas necesito:
-    const maxL = Math.max(...lineasPorCol.map(a=>a.length));
-    for(let i=0;i<maxL;i++){
-      const vals = lineasPorCol.map(a =>
-        (a[i]||"").replace(/&/g,"\\&").replace(/\n/g,"\\\\")
-      );
-      tablaLatex += vals.join(' & ') + ' \\\\\n\\hline\n';
+    const maxL = Math.max(...lineasPorCol.map(a => a.length));
+    for (let i = 0; i < maxL; i++) {
+      const vals = lineasPorCol.map(a => (a[i]||"").replace(/&/g,"\\&"));
+      todasFilas.push(vals.join(' & '));
     }
   });
 
-  tablaLatex += '\\end{longtable}\n';
+  todasFilas.forEach(filaTexto => {
+    tablaLatex += filaTexto + " \\\\\n";
+  });
+  tablaLatex += "\\hline\n\\end{longtable}\n\n";
 
-  // Plantilla completa
   const plantilla = `
 \\documentclass{article}
 \\usepackage[${t.babel}]{babel}
@@ -275,34 +272,34 @@ ${t.contenidoFijo}
 \\end{document}
   `;
 
-  // Enviar al servidor
-  const blob = new Blob([plantilla], { type:'text/plain' });
-  const texFile = new File([blob], 'documento.tex');
-  const formData = new FormData();
-  formData.append('file', texFile);
+  const blobTex = new Blob([plantilla], { type:'text/plain' });
+  const texFile = new File([blobTex], 'documento.tex');
+  const fd = new FormData();
+  fd.append('file', texFile);
 
-  // Header.png
-  const hres = await fetch('https://michaelpc721.github.io/Im-genes/Header.png');
-  const hblob = await hres.blob();
-  formData.append('header', new File([hblob], 'Header.png'));
+  const hresp = await fetch('https://michaelpc721.github.io/Im-genes/Header.png');
+  const hblob = await hresp.blob();
+  fd.append('header', new File([hblob], 'Header.png'));
 
   try {
     const res = await fetch('https://tex-to-pdf-production.up.railway.app/convert', {
-      method:'POST', body: formData
+      method:'POST', body: fd
     });
-    if(res.ok){
+    if (res.ok) {
       const pdf = await res.blob();
       const url = URL.createObjectURL(pdf);
-      const a = document.createElement('a');
-      a.href = url;
+      const a   = document.createElement('a');
+      a.href  = url;
       a.download = `${grado}_${materia}.pdf`;
+      document.body.appendChild(a);
       a.click();
+      a.remove();
     } else {
-      alert('Error generando PDF en el servidor.');
+      alert('Error generando PDF.');
     }
   } catch(e) {
     console.error(e);
-    alert('Error de conexión al servidor.');
+    alert('No se pudo conectar al servidor.');
   } finally {
     loading.style.display = 'none';
   }

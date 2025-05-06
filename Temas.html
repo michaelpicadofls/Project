@@ -104,7 +104,7 @@
   </div>
 </div>
 
-  <script>
+ <script>
 let idiomaSeleccionado = "spanish";
 
 const traducciones = {
@@ -182,30 +182,27 @@ Schüler müssen ein persönliches Lesebuch in der Schule haben, um nach Abschlu
 function cambiarIdioma() {
   idiomaSeleccionado = document.getElementById('idioma').value;
   const t = traducciones[idiomaSeleccionado];
-  document.getElementById('titulo-principal').innerText = t.titulo;
-  document.getElementById('label-profesor').innerText  = t.profesor;
-  document.getElementById('label-grado').innerText     = t.grado;
-  document.getElementById('label-materia').innerText   = t.materia;
-  document.getElementById('label-semestre').innerText  = t.semestre;
-  document.getElementById('label-diaExamen').innerText = t.diaExamen;
-  document.getElementById('label-tabla').innerText     = t.tabla;
-  document.getElementById('th-aprendizajes').innerText = t.aprendizajes;
-  document.getElementById('th-contenidos').innerText   = t.contenidos;
-  document.getElementById('th-recursos').innerText     = t.recursos;
-  document.getElementById('btn-agregar').innerText     = t.agregarFila;
-  document.getElementById('btn-generar').innerText     = t.generar;
-
-  // Actualizar todos los botones "Eliminar" existentes
-  document.querySelectorAll('#tabla tbody tr td button').forEach(boton => {
-    boton.innerText = t.eliminar;
+  document.getElementById('titulo-principal').innerText   = t.titulo;
+  document.getElementById('label-profesor').innerText    = t.profesor;
+  document.getElementById('label-grado').innerText       = t.grado;
+  document.getElementById('label-materia').innerText     = t.materia;
+  document.getElementById('label-semestre').innerText    = t.semestre;
+  document.getElementById('label-diaExamen').innerText   = t.diaExamen;
+  document.getElementById('label-tabla').innerText       = t.tabla;
+  document.getElementById('th-aprendizajes').innerText   = t.aprendizajes;
+  document.getElementById('th-contenidos').innerText     = t.contenidos;
+  document.getElementById('th-recursos').innerText       = t.recursos;
+  document.getElementById('btn-agregar').innerText       = t.agregarFila;
+  document.getElementById('btn-generar').innerText       = t.generar;
+  document.querySelectorAll('#tabla tbody tr td button').forEach(b => {
+    b.innerText = t.eliminar;
   });
 }
 
 function agregarFila() {
-  const tbody = document.getElementById("tabla").querySelector("tbody");
-  const fila = document.createElement("tr");
   const t = traducciones[idiomaSeleccionado];
-
+  const tbody = document.querySelector("#tabla tbody");
+  const fila  = document.createElement("tr");
   fila.innerHTML = `
     <td><textarea placeholder="Escribe aquí..."></textarea></td>
     <td><textarea placeholder="Escribe aquí..."></textarea></td>
@@ -215,36 +212,44 @@ function agregarFila() {
   tbody.appendChild(fila);
 }
 
-function eliminarFila(boton) {
-  boton.closest("tr").remove();
+function eliminarFila(btn) {
+  btn.closest("tr").remove();
 }
 
 async function generarLatex() {
   const loading = document.getElementById('loading');
   loading.style.display = 'block';
 
-  const t = traducciones[idiomaSeleccionado];
-  const profesor = document.getElementById('profesor').value;
+  const t         = traducciones[idiomaSeleccionado];
+  const prof      = document.getElementById('profesor').value;
   const grado     = document.getElementById('grado').value;
   const materia   = document.getElementById('materia').value;
   const semestre  = document.getElementById('semestre').value;
   const diaExamen = document.getElementById('diaExamen').value;
 
+  // Cabecera de la longtable
   let tablaLatex = `\\begin{longtable}{|p{1.9in}|p{1.9in}|p{1.9in}|}\\hline\n`;
   tablaLatex += `\\textbf{${t.aprendizajes}} & \\textbf{${t.contenidos}} & \\textbf{${t.recursos}} \\\\ \\hline\n\\endfirsthead\n`;
   tablaLatex += `\\textbf{${t.aprendizajes}} & \\textbf{${t.contenidos}} & \\textbf{${t.recursos}} \\\\ \\hline\n\\endhead\n`;
 
-  document.querySelectorAll('#tabla tbody tr').forEach(fila => {
-    const celdas = fila.querySelectorAll('textarea');
-    const datosFila = Array.from(celdas)
-      .map(c => c.value.replace(/\n/g, '\\\\'))
-      .join(' & ')
-      + ' \\\\\n\\hline\n';
-    tablaLatex += datosFila;
+  // Cada fila de la tabla HTML → múltiples filas LaTeX según líneas
+  document.querySelectorAll('#tabla tbody tr').forEach(row => {
+    const celdas = row.querySelectorAll('textarea');
+    // Array de arrays de líneas
+    const lineasPorCol = Array.from(celdas).map(ta => ta.value.split(/\n/));
+    // Cuántas sub-filas necesito:
+    const maxL = Math.max(...lineasPorCol.map(a=>a.length));
+    for(let i=0;i<maxL;i++){
+      const vals = lineasPorCol.map(a =>
+        (a[i]||"").replace(/&/g,"\\&").replace(/\n/g,"\\\\")
+      );
+      tablaLatex += vals.join(' & ') + ' \\\\\n\\hline\n';
+    }
   });
 
-  tablaLatex += '\\end{longtable}';
+  tablaLatex += '\\end{longtable}\n';
 
+  // Plantilla completa
   const plantilla = `
 \\documentclass{article}
 \\usepackage[${t.babel}]{babel}
@@ -256,14 +261,9 @@ async function generarLatex() {
 
 \\begin{document}
 
-\\begin{figure}
-  \\centering
-  \\includegraphics[width=1\\textwidth]{Header.png}
-\\end{figure}
-
 \\begin{longtable}{|p{2.9in}|p{2.9in}|}
 \\hline
-${t.profesor} ${profesor} & ${t.grado} ${grado} \\\\ \\hline
+${t.profesor} ${prof} & ${t.grado} ${grado} \\\\ \\hline
 ${t.materia} ${materia} & ${t.semestre} ${semestre} \\\\ \\hline
 \\multicolumn{2}{|c|}{${t.diaExamen} ${diaExamen}} \\\\ \\hline
 \\end{longtable}
@@ -275,36 +275,34 @@ ${t.contenidoFijo}
 \\end{document}
   `;
 
-  // empaquetar y enviar
-  const blobTex = new Blob([plantilla], {type:'text/plain'});
-  const fileTex = new File([blobTex], 'documento.tex');
+  // Enviar al servidor
+  const blob = new Blob([plantilla], { type:'text/plain' });
+  const texFile = new File([blob], 'documento.tex');
   const formData = new FormData();
-  formData.append('file', fileTex);
+  formData.append('file', texFile);
 
-  // header.png
-  const headerResp = await fetch('https://michaelpc721.github.io/Im-genes/Header.png');
-  const headerBlob = await headerResp.blob();
-  formData.append('header', new File([headerBlob], 'Header.png'));
+  // Header.png
+  const hres = await fetch('https://michaelpc721.github.io/Im-genes/Header.png');
+  const hblob = await hres.blob();
+  formData.append('header', new File([hblob], 'Header.png'));
 
   try {
     const res = await fetch('https://tex-to-pdf-production.up.railway.app/convert', {
       method:'POST', body: formData
     });
-    if(res.ok) {
-      const pdfBlob = await res.blob();
-      const url = URL.createObjectURL(pdfBlob);
+    if(res.ok){
+      const pdf = await res.blob();
+      const url = URL.createObjectURL(pdf);
       const a = document.createElement('a');
       a.href = url;
       a.download = `${grado}_${materia}.pdf`;
-      document.body.appendChild(a);
       a.click();
-      a.remove();
     } else {
-      alert('Error generando el PDF en el servidor.');
+      alert('Error generando PDF en el servidor.');
     }
   } catch(e) {
     console.error(e);
-    alert('No se pudo conectar al servidor.');
+    alert('Error de conexión al servidor.');
   } finally {
     loading.style.display = 'none';
   }

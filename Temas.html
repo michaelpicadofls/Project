@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Generador de Documento LaTeX</title>
+  <style>
+    .generador-latex {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f4;
+      padding: 20px;
+      border: 1px solid #ccc;
+      margin: 20px auto;
+      max-width: 1000px;
+    }
+    label, textarea, input, button, select {
+      display: block;
+      width: 100%;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+    }
+    textarea { height: 100px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    input[type="text"], select {
+      padding: 8px;
+    }
+    button {
+      background-color: #008CBA;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #005f73;
+    }
+    #loading {
+      text-align: center;
+      margin-top: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<div class="generador-latex">
+  <h3 id="titulo-principal">Generar Documento LaTeX - Planificación de Examen</h3>
+
+  <label for="idioma">Idioma / Language / Sprache:</label>
+  <select id="idioma" onchange="cambiarIdioma()">
+    <option value="spanish">Español</option>
+    <option value="english">English</option>
+    <option value="german">Deutsch</option>
+  </select>
+
+  <label id="label-profesor" for="profesor">Profesor:</label>
+  <input type="text" id="profesor" placeholder="Nombre del profesor">
+
+  <label id="label-grado" for="grado">Grado:</label>
+  <input type="text" id="grado" placeholder="Grado o nivel educativo">
+
+  <label id="label-materia" for="materia">Materia:</label>
+  <input type="text" id="materia" placeholder="Materia">
+
+  <label id="label-semestre" for="semestre">Semestre:</label>
+  <input type="text" id="semestre" placeholder="Semestre">
+
+  <label id="label-diaExamen" for="diaExamen">Día de examen:</label>
+  <input type="text" id="diaExamen" placeholder="Fecha del examen">
+
+  <label id="label-tabla">Tabla de planificación:</label>
+  <table id="tabla">
+    <thead>
+      <tr>
+        <th id="th-aprendizajes">Aprendizajes esperados</th>
+        <th id="th-contenidos">Contenidos</th>
+        <th id="th-recursos">Recursos</th>
+        <th>Eliminar</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input type="text" placeholder="Escribe aquí..."></td>
+        <td><input type="text" placeholder="Escribe aquí..."></td>
+        <td><input type="text" placeholder="Escribe aquí..."></td>
+        <td><button onclick="eliminarFila(this)">Eliminar</button></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button onclick="agregarFila()" id="btn-agregar">Agregar fila</button>
+  <button onclick="generarLatex()" id="btn-generar">Generar PDF</button>
+
+  <div id="loading">
+    <p>⏳ Procesando documento, por favor espera...</p>
+  </div>
+</div>
+
+<script>
+let idiomaSeleccionado = "spanish";
+
+const traducciones = {
+  spanish: {
+    babel: "spanish",
+    titulo: "Generar - Planificación de Examen",
+    profesor: "Profesor:",
+    grado: "Grado:",
+    materia: "Materia:",
+    semestre: "Semestre:",
+    diaExamen: "Día de examen:",
+    tabla: "Tabla de planificación:",
+    aprendizajes: "Aprendizajes esperados",
+    contenidos: "Contenidos",
+    recursos: "Recursos",
+    agregarFila: "Agregar fila",
+    generar: "Generar PDF",
+    eliminar: "Eliminar",
+    contenidoFijo: `
+La presencia del estudiante en las lecciones en las que se realice el examen es obligatoria, de la misma forma el uso del uniforme completo es indispensable para poder presentar el examen.\\\\
+Para que el estudiante pueda acceder al derecho de reposición, en caso de presentar problemas a la hora de la aplicación del examen, el padre de familia debe comunicar sobre la situación el mismo día de la prueba al docente de materia con el fin de que sea valorada la justificación de la ausencia y presentar el comprobante correspondiente.\\\\
+Los exámenes son uno de los instrumentos de evaluación que se utilizan para determinar el aprendizaje del estudiante. Por lo tanto, los mismos deben evidenciar la producción propia del alumno.\\\\
+En caso de descubrirse fraude en la prueba, se aplicará el artículo 33 del Reglamento de evaluación de los aprendizajes del Ministerio de Educación Pública (MEP).\\\\
+Los estudiantes deben tener en la escuela un libro para lectura personal, para que cuando finalice la prueba puedan leer en él.
+    `
+  },
+  english: {
+    babel: "english",
+    titulo: "Generate - Exam Planning",
+    profesor: "Teacher:",
+    grado: "Grade:",
+    materia: "Subject:",
+    semestre: "Semester:",
+    diaExamen: "Exam day:",
+    tabla: "Planning table:",
+    aprendizajes: "Learning objectives",
+    contenidos: "Contents",
+    recursos: "Resources",
+    agregarFila: "Add row",
+    generar: "Generate PDF",
+    eliminar: "Delete",
+    contenidoFijo: `
+Student presence is mandatory during lessons when the exam is applied. Full uniform is required to take the exam.\\\\
+If a student cannot attend, parents must inform the teacher the same day and present a justification with the necessary proof.\\\\
+Exams are one of the assessment tools used to determine student learning and must reflect the student's own work.\\\\
+In case of cheating, Article 33 of the Ministry of Public Education (MEP) Regulations will apply.\\\\
+Students must have a personal reading book at school to read after completing the exam.
+    `
+  },
+  german: {
+    babel: "german",
+    titulo: "Erstellen - Prüfungsplanung",
+    profesor: "Lehrer:",
+    grado: "Klasse:",
+    materia: "Fach:",
+    semestre: "Semester:",
+    diaExamen: "Prüfungstag:",
+    tabla: "Planungstabelle:",
+    aprendizajes: "Lernziele",
+    contenidos: "Inhalte",
+    recursos: "Ressourcen",
+    agregarFila: "Zeile hinzufügen",
+    generar: "PDF erstellen",
+    eliminar: "Löschen",
+    contenidoFijo: `
+Die Anwesenheit der Schüler während der Prüfungen ist obligatorisch. Ebenso ist das Tragen der vollständigen Uniform erforderlich, um die Prüfung abzulegen.\\\\
+Im Falle einer Abwesenheit müssen die Eltern noch am selben Tag den Fachlehrer informieren und einen entsprechenden Nachweis vorlegen.\\\\
+Prüfungen sind eines der Instrumente zur Bewertung des Lernfortschritts der Schüler und müssen deren eigene Arbeit widerspiegeln.\\\\
+Bei Betrug wird Artikel 33 der Evaluationsordnung des Ministeriums für öffentliche Bildung (MEP) angewendet.\\\\
+Schüler müssen ein persönliches Lesebuch in der Schule haben, um nach Abschluss der Prüfung darin zu lesen.
+    `
+  }
+};
+
+function cambiarIdioma() {
+  idiomaSeleccionado = document.getElementById('idioma').value;
+  const t = traducciones[idiomaSeleccionado];
+
+  document.getElementById('titulo-principal').innerText = t.titulo;
+  document.getElementById('label-profesor').innerText = t.profesor;
+  document.getElementById('label-grado').innerText = t.grado;
+  document.getElementById('label-materia').innerText = t.materia;
+  document.getElementById('label-semestre').innerText = t.semestre;
+  document.getElementById('label-diaExamen').innerText = t.diaExamen;
+  document.getElementById('label-tabla').innerText = t.tabla;
+  document.getElementById('th-aprendizajes').innerText = t.aprendizajes;
+  document.getElementById('th-contenidos').innerText = t.contenidos;
+  document.getElementById('th-recursos').innerText = t.recursos;
+  document.getElementById('btn-agregar').innerText = t.agregarFila;
+  document.getElementById('btn-generar').innerText = t.generar;
+
+  document.querySelectorAll('#tabla tbody tr td button').forEach(boton => {
+    boton.innerText = t.eliminar;
+  });
+}
+
+function agregarFila() {
+  const tabla = document.getElementById("tabla").getElementsByTagName('tbody')[0];
+  const nuevaFila = tabla.insertRow();
+  
+  for (let i = 0; i < 3; i++) {
+    const celda = nuevaFila.insertCell(i);
+    celda.innerHTML = '<input type="text" placeholder="Escribe aquí...">';
+  }
+  
+  const celdaEliminar = nuevaFila.insertCell(3);
+  const t = traducciones[idiomaSeleccionado];
+  celdaEliminar.innerHTML = `<button onclick="eliminarFila(this)">${t.eliminar}</button>`;
+}
+
+function eliminarFila(boton) {
+  const fila = boton.parentNode.parentNode;
+  fila.parentNode.removeChild(fila);
+}
+
+async function generarLatex() {
+  const loading = document.getElementById('loading');
+  loading.style.display = 'block';
+
+  const t = traducciones[idiomaSeleccionado];
+  const profesor = document.getElementById('profesor').value;
+  const grado = document.getElementById('grado').value;
+  const materia = document.getElementById('materia').value;
+  const semestre = document.getElementById('semestre').value;
+  const diaExamen = document.getElementById('diaExamen').value;
+
+  const filas = document.querySelectorAll('#tabla tbody tr');
+  let tablaLatex = `\\begin{longtable}{|p{1.9in}|p{1.9in}|p{1.9in}|}\\hline\n`;
+  tablaLatex += `\\textbf{${t.aprendizajes}} & \\textbf{${t.contenidos}} & \\textbf{${t.recursos}} \\\\ \\hline\n\\endfirsthead\n`;
+  tablaLatex += `\\textbf{${t.aprendizajes}} & \\textbf{${t.contenidos}} & \\textbf{${t.recursos}} \\\\ \\hline\n\\endhead\n`;
+
+  filas.forEach(fila => {
+    const celdas = fila.querySelectorAll('input');
+    const datosFila = Array.from(celdas).map(celda => celda.value || "").join(' & ') + ' \\\\\n\\hline\n';
+    tablaLatex += datosFila;
+  });
+
+  tablaLatex += '\\end{longtable}';
+
+  const plantilla = `
+\\documentclass{article}
+\\usepackage[${t.babel}]{babel}
+\\usepackage[a4paper,margin=1in]{geometry}
+\\usepackage{longtable}
+\\usepackage{graphicx}
+\\usepackage{lmodern}
+\\usepackage{booktabs}
+\\pagenumbering{gobble}
+
+
+\\begin{document}
+
+\\begin{figure}
+\\centering
+\\includegraphics[width=1\\textwidth]{Header.png}
+\\end{figure}
+
+\\begin{longtable}{|p{2.9in}|p{2.9in}|}
+\\hline
+${t.profesor} ${profesor} & ${t.grado} ${grado} \\\\ \\hline
+${t.materia} ${materia} & ${t.semestre} ${semestre} \\\\ \\hline
+\\multicolumn{2}{|c|}{${t.diaExamen} ${diaExamen}} \\\\ \\hline
+\\end{longtable}
+
+${tablaLatex}
+
+${t.contenidoFijo}
+
+\\end{document}
+  `;
+
+  const blob = new Blob([plantilla], { type: 'text/plain' });
+  const texFile = new File([blob], "document.tex");
+
+  const formData = new FormData();
+  formData.append("file", texFile);
+
+  const headerResponse = await fetch('https://michaelpc721.github.io/Im-genes/Header.png');
+  const headerBlob = await headerResponse.blob();
+  const headerFile = new File([headerBlob], "Header.png");
+  formData.append("header", headerFile);
+
+  try {
+    const response = await fetch('https://tex-to-pdf-production.up.railway.app/convert', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (response.ok) {
+      const blobPdf = await response.blob();
+      const url = window.URL.createObjectURL(blobPdf);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${grado}_${materia}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    } else {
+      alert('Error al generar el PDF.');
+    }
+  } catch (error) {
+    console.error('Error en la conexión:', error);
+    alert('No se pudo conectar con el servidor.');
+  } finally {
+    loading.style.display = 'none';
+  }
+}
+</script>
+
+</body>
+</html>

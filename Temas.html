@@ -238,8 +238,9 @@ async function generarLatex() {
 
   filas.forEach(fila => {
     const celdas = fila.querySelectorAll('input');
-    const datosFila = Array.from(celdas).map(celda => celda.value || "").join(' & ') + ' \\\\\n\\hline\n';
-    tablaLatex += datosFila;
+    const datosFila = Array.from(celdas).map(celda => 
+    (celda.value || "").replace(/\n/g, '\\\\')
+    ).join(' & ') + ' \\\\\n\\hline\n';
   });
 
   tablaLatex += '\\end{longtable}';

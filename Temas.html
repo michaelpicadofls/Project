@@ -88,9 +88,9 @@
     </thead>
     <tbody>
       <tr>
-        <td><input type="text" placeholder="Escribe aquí..."></td>
-        <td><input type="text" placeholder="Escribe aquí..."></td>
-        <td><input type="text" placeholder="Escribe aquí..."></td>
+        <td><textarea placeholder="Escribe aquí..."></textarea></td>
+        <td><textarea placeholder="Escribe aquí..."></textarea></td>
+        <td><textarea placeholder="Escribe aquí..."></textarea></td>
         <td><button onclick="eliminarFila(this)">Eliminar</button></td>
       </tr>
     </tbody>
@@ -207,7 +207,7 @@ function agregarFila() {
   
   for (let i = 0; i < 3; i++) {
     const celda = nuevaFila.insertCell(i);
-    celda.innerHTML = '<input type="text" placeholder="Escribe aquí...">';
+    celda.innerHTML = '<textarea placeholder="Escribe aquí..."></textarea>';
   }
   
   const celdaEliminar = nuevaFila.insertCell(3);
@@ -237,7 +237,7 @@ async function generarLatex() {
   tablaLatex += `\\textbf{${t.aprendizajes}} & \\textbf{${t.contenidos}} & \\textbf{${t.recursos}} \\\\ \\hline\n\\endhead\n`;
 
   filas.forEach(fila => {
-    const celdas = fila.querySelectorAll('input');
+    const celdas = fila.querySelectorAll('textarea');
     const datosFila = Array.from(celdas).map(celda => 
     (celda.value || "").replace(/\n/g, '\\\\')
     ).join(' & ') + ' \\\\\n\\hline\n';

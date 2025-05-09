@@ -1,11 +1,17 @@
-<div class="contenedor-botones-blog">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exámenes – Primer Semestre 2025</title>
   <style>
     .contenedor-botones-blog {
       font-family: Arial, sans-serif;
       background-color: #f9f9f9;
       padding: 20px;
-      margin: 40px auto;
+      margin: 20px auto;
       max-width: 800px;
+      width: 90%;            /* asegura que nunca exceda el ancho */
       box-sizing: border-box;
       border: 1px solid #ccc;
       border-radius: 8px;
@@ -15,85 +21,105 @@
       text-align: center;
       margin-bottom: 30px;
       color: #333;
+      font-size: 1.5em;
     }
 
     .botones-grid {
       display: grid;
-      grid-template-columns: repeat(2, auto);
-      gap: 20px;
-      justify-content: center;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
       margin-bottom: 30px;
     }
 
-    .botones-grid .boton-blog {
+    .boton-blog {
       background-color: #3a8fc8;
       color: white;
-      padding: 15px 30px;
+      padding: 12px 0;
       border: none;
       border-radius: 5px;
-      font-size: 14px;
+      font-size: 1em;
       cursor: pointer;
       text-align: center;
       transition: background-color 0.3s ease;
+      width: 100%;         /* ocupa todo el espacio disponible */
     }
 
-    .botones-grid .boton-blog:hover {
+    .boton-blog:hover {
       background-color: #005f73;
     }
 
-    .botones-grid .boton-blog:last-child {
+    .boton-blog.full-span {
       grid-column: span 2;
       justify-self: center;
     }
 
-    .contenedor-botones-blog .disclaimer {
-      margin-top: 30px;
-      font-size: 12px;
+    .disclaimer {
+      margin-top: 20px;
+      font-size: 0.9em;
       color: #666;
       text-align: center;
     }
+
+    /* Ajustes extra para móviles muy angostos */
+    @media (max-width: 400px) {
+      .contenedor-botones-blog {
+        padding: 15px;
+      }
+      .boton-blog {
+        font-size: 0.9em;
+        padding: 10px 0;
+      }
+    }
   </style>
-
-  <h2>Exámenes - Primer Semestre 2025</h2>
-
-  <div class="botones-grid">
-    <button class="boton-blog"
-      onclick="window.open('https://drive.google.com/drive/folders/1Ahh2XANjt61OnnX0bZxRSZIqw_b9L72o', '_blank')">
-      Temas 4°
-    </button>
-    <button class="boton-blog"
-      onclick="window.open('https://drive.google.com/drive/folders/1-B0nvv0URVN3gXDVkByRS_ry0x63QBZ5', '_blank')">
-      Temas 5°
-    </button>
-    <button class="boton-blog"
-      onclick="window.open('https://drive.google.com/drive/folders/1y2mJ4grEnByQRjMyXARmueexrq5TLTLa', '_blank')">
-      Temas 6°
-    </button>
-    <button class="boton-blog"
-      onclick="window.open('https://drive.google.com/drive/folders/1dy6AgXSs1RP2FoxBURhF00tIrsH1YENJ', '_blank')">
-      Temas 7°
-    </button>
-    <button class="boton-blog"
-      onclick="window.open('https://drive.google.com/drive/folders/1OxoykxLBJG-tbFgobPgpjWbDvuD596QC', '_blank')">
-      Temas 8°
-    </button>
-    <button class="boton-blog"
-      onclick="window.open('https://drive.google.com/drive/folders/11_M6K0JtnXhcC64rW4iw7fLhzD83vyTm', '_blank')">
-      Temas 9°
-    </button>
-    <button class="boton-blog"
-      onclick="window.open('https://drive.google.com/drive/folders/1f544Zi-VL98l5bN-Mko9FNbtSdRyZOVH', '_blank')">
-      Temas 10°
-    </button>
-    <button class="boton-blog"
-      onclick="window.open('https://drive.google.com/drive/folders/1NjKxFchF7f2BVkPmCF7PvO0p0qgY-lY6', '_blank')">
-      Temas 11°
-    </button>
-    <button class="boton-blog"
-      onclick="window.open('https://drive.google.com/drive/folders/1c6DAe37HWk68yChPwWypYtdba4pjmWsV', '_blank')">
-      Temas 12°
-    </button>
+</head>
+<body>
+  <div class="contenedor-botones-blog">
+    <h2>Exámenes - Primer Semestre 2025</h2>
+    <div class="botones-grid">
+      <button class="boton-blog"
+        onclick="window.open('https://drive.google.com/drive/folders/1Ahh2XANjt61OnnX0bZxRSZIqw_b9L72o','_blank')">
+        Temas 4°
+      </button>
+      <button class="boton-blog"
+        onclick="window.open('https://drive.google.com/drive/folders/1-B0nvv0URVN3gXDVkByRS_ry0x63QBZ5','_blank')">
+        Temas 5°
+      </button>
+      <button class="boton-blog"
+        onclick="window.open('https://drive.google.com/drive/folders/1y2mJ4grEnByQRjMyXARmueexrq5TLTLa','_blank')">
+        Temas 6°
+      </button>
+      <button class="boton-blog"
+        onclick="window.open('https://drive.google.com/drive/folders/1dy6AgXSs1RP2FoxBURhF00tIrsH1YENJ','_blank')">
+        Temas 7°
+      </button>
+      <button class="boton-blog"
+        onclick="window.open('https://drive.google.com/drive/folders/1OxoykxLBJG-tbFgobPgpjWbDvuD596QC','_blank')">
+        Temas 8°
+      </button>
+      <button class="boton-blog"
+        onclick="window.open('https://drive.google.com/drive/folders/11_M6K0JtnXhcC64rW4iw7fLhzD83vyTm','_blank')">
+        Temas 9°
+      </button>
+      <button class="boton-blog"
+        onclick="window.open('https://drive.google.com/drive/folders/1f544Zi-VL98l5bN-Mko9FNbtSdRyZOVH','_blank')">
+        Temas 10°
+      </button>
+      <button class="boton-blog"
+        onclick="window.open('https://drive.google.com/drive/folders/1NjKxFchF7f2BVkPmCF7PvO0p0qgY-lY6','_blank')">
+        Temas 11°
+      </button>
+      <button class="boton-blog full-span"
+        onclick="window.open('https://drive.google.com/drive/folders/1c6DAe37HWk68yChPwWypYtdba4pjmWsV','_blank')">
+        Temas 12°
+      </button>
+    </div>
+    <div class="disclaimer">
+      *Horarios de los exámenes están en la 
+      <a href="https://cloudcampuspro.com/calendario/index.php?id=228&amp;h=f341c0050a754e4dfb3e0f14d40e920b&amp;u=319881"
+         target="_blank" rel="noopener">
+        agenda de Cloud Campus Pro
+      </a>.
+    </div>
   </div>
-
-  <div class="disclaimer">
-    *Horarios de los exámenes están en la <a href="https://cloudcampuspro.com/calendario/index.php?id=228&amp;h=f341c0050a754e4dfb
+</body>
+</html>
